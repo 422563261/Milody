@@ -26,7 +26,6 @@ ul,li{
     font-weight: 300;
     text-indent: 10px;
     letter-spacing: 10px;
-    background: #fff;
     position: fixed;
     line-height: 80vh;
     display: block;
@@ -36,11 +35,14 @@ ul,li{
     bottom: 0;
     z-index: 100;
     transition: .5s;
+    background: #fff;
+    background-size: 100% 100%;
 }
 .mi-logo{
     position: fixed;
     display: block;
-    width: 400px;
+    max-width: 400px;
+    width: 100%;
     height: 173px;
     top: 0;
     left: 0;
@@ -49,9 +51,19 @@ ul,li{
     opacity: 0;
     z-index: 110;
     margin: auto;
-    background: url("../img/logo.png") no-repeat;
+    background: url("../img/logo_black.png") no-repeat;
     background-size: 100%;
     transition: .5s;
+    transform-origin: center center;
+}
+
+.mi-blur{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: .3s;
 }
 
 
@@ -74,20 +86,19 @@ ul,li{
     z-index: 11;
     transition: opacity .5s;
 }
-.mi-bg{
+#bg{
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    /*background: #ff99cc;*/
-    /*background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ff3366), color-stop(100%,#ffccff));*/
-    /*background: -webkit-linear-gradient(top,  #ff3366 0%,#ffccff 100%);*/
-    /*background: linear-gradient(to bottom,  #ff3366 0%,#ffccff 100%);*/
-    /*filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff3366', endColorstr='#ffccff',GradientType=0 );*/
-    background: url("../bg/IMG_0409.JPG");
     background-size: cover;
-    /*filter: blur(1px);*/
+}
+.mi-bg-1{
+    background: url("../bg/Sakura_2.jpg");
+}
+.mi-bg-2{
+    background: url("../bg/IMG_0409.JPG");
 }
 
 .mi-action{
@@ -114,8 +125,8 @@ ul,li{
     width: 65vw;
     height: 65vh;
     display: inline-block;
-    background: rgba(255,255,255,.2);
-    box-shadow: 0 0 3px 3px rgba(55,55,55,.1);
+    background: rgba(0,0,0,.2);
+    box-shadow: 0 0 3px 3px rgba(255,255,255,.1);
     z-index: 21;
     transition: .3s;
     transform: scale(1.2);
@@ -127,6 +138,7 @@ ul,li{
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    color: #eee;
 }
 .mi-music-singer{
     font-size: 16px;
@@ -165,6 +177,16 @@ ul,li{
     width: 20px;
     height: 20px;
 }
+#change{
+    position: absolute;
+    display: inline-block;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 20px;
+    height: 20px;
+}
 .icon-lock{
     display: inline-block;
     width: 20px;
@@ -173,12 +195,12 @@ ul,li{
     background-size: 100%,100%;
 }
 .icon-unlock{
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background: url("../icon/575723.png");
-    background-size: 100%,100%;
-}
+     display: inline-block;
+     width: 20px;
+     height: 20px;
+     background: url("../icon/575723.png");
+     background-size: 100%,100%;
+ }
 
 .mi-ctrl-btns{
     position: absolute;
@@ -212,7 +234,7 @@ ul,li{
     opacity: 1;
 }
 .icon-list{
-    background: url("../icon/575729.png");
+    background: url("../icon/575725.png");
 }
 .icon-pause{
     background: url("../icon/pause.png");
@@ -223,24 +245,44 @@ ul,li{
 .icon-next{
     background: url("../icon/next.png");
 }
-.icon-search{
-    background: url("../icon/575730.png");
+.icon-star{
+    background: url("../icon/575729.png");
 }
 .icon-close{
     background: url("../icon/575716.png");
 }
-#start{
+.icon-change{
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url("../icon/575727.png");
+    background-size: 100%,100%;
+}
+#pause{
     display: none;
 }
 
-.mi-blur{
+.mi-process-ctn{
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    transition: .3s;
+    display: block;
+    width: 100%;
+    height: 3px;
+    border: 1px rgba(255,255,255,.4) solid;
+    box-sizing: border-box;
+    bottom: 40px;
+    cursor: pointer;
 }
+.mi-process{
+    position: absolute;
+    display: inline-block;
+    left: 0;
+    height: 1px;
+    width: 0;
+    background: #fff;
+    box-shadow: 0 0 5px 3px rgba(255, 255, 255, 0.5);
+    transition: width 1s linear;
+}
+
 
 .mi-list{
     position: fixed;
@@ -263,9 +305,73 @@ ul,li{
     box-sizing: border-box;
     width: 70%;
     border-right: 1px #fff solid;
-    padding-top: 50px;
     max-height: 100vh;
+    overflow: hidden;
+}
+
+.mi-listing-ranking{
+    width: 100%;
+    height: 100vh;
+    margin-top: -100vh;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+    transition: margin .3s;
+    box-sizing: border-box;
+    padding-top: 50px;
     overflow: scroll;
+}
+.recommended,.hot{
+    width: 50%;
+    text-align: center;
+}
+
+.mi-listing-options{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    align-items: center;
+    box-sizing: border-box;
+}
+.mi-listing-options .box{
+    width: 200px;
+    height: 200px;
+    line-height: 200px;
+    text-align: center;
+    background: rgba(0,0,0,.2);
+    color: #fff;
+    cursor: pointer;
+    transition: .3s;
+    font-size: 16px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, .7);
+}
+.mi-listing-options .box:hover{
+    box-shadow:0 0 20px rgba(255, 255, 255, .7);
+    text-shadow: 0 0 10px rgba(0, 0, 0, .2);
+}
+
+.mi-listing-content{
+    display: block;
+    padding-top: 50px;
+    overflow: scroll;
+    max-height: 100vh;
+    box-sizing: border-box;
+}
+.mi-listing-back{
+    display: inline-block;
+    background: url("../icon/575709.png");
+    width: 30px;
+    height: 30px;
+    margin-right: 20px;
+    background-size: cover;
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+.mi-listing-back:hover{
+    opacity: 1;
 }
 .mi-listing-title{
     max-width: 100%;
@@ -274,17 +380,20 @@ ul,li{
     box-sizing: border-box;
     padding-left: 4%;
     color: #fff;
+    height: 30px;
 }
 .mi-listing-title h2{
     display: inline-block;
     height: 30px;
     line-height: 30px;
+    vertical-align: top;
     box-sizing: border-box;
     width: 40%;
 }
 .mi-listing-search{
     float: right;
     margin-right: 6%;
+    margin-bottom: 20px;
     padding: 0 5px;
     width: 43%;
     min-width: 200px;
@@ -293,10 +402,24 @@ ul,li{
     border: none;
     border-radius: 3px;
     background: rgba(255,255,255,.3);
+    color: #eee;
+}
+.mi-listing-search::-webkit-input-placeholder{
+    color: #eee;
+}
+.mi-listing-search:-moz-placeholder{
+    color: #eee;
+}
+.mi-listing-search::-moz-placeholder{
+    color: #eee;
+}
+.mi-listing-search:-ms-input-placeholder{
+    color: #eee;
 }
 
 .mi-listing-songs{
     max-width: 100%;
+    min-height: 100vh;
     width: 724px;
     overflow: hidden;
     clear: both;
@@ -305,8 +428,8 @@ ul,li{
     box-sizing: border-box;
 
 }
-.mi-listing-songs li{
-    display: inline-table;
+.mi-listing-songs li,.mi-hot-songs li,.mi-recommended-songs li{
+    display: inline-block;
     width: 40%;
     min-width: 200px;
     height: 70px;
@@ -320,16 +443,189 @@ ul,li{
     line-height: 30px;
     box-sizing: border-box;
     cursor: pointer;
+    text-align: left;
 }
-.mi-listing-songs li:hover{
+.mi-listing-songs li:hover,.mi-hot-songs li:hover,.mi-recommended-songs li:hover{
     box-shadow:0 0 10px rgba(255, 255, 255, .7);
 }
-.mi-listing-songs li h4{
+.mi-listing-songs li h4,.mi-hot-songs li h4,.mi-recommended-songs li h4{
+    width: 100%;
     font-size: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
 }
-.mi-listing-songs li p{
+.mi-listing-songs li p,.mi-hot-songs li p,.mi-recommended-songs li p{
     font-size: 14px;
 }
 
+.mi-listed{
+    width: 30%;
+    display: inline-block;
+    float: right;
+    padding-top: 50px;
+    max-height: 100vh;
+    overflow: scroll;
+    box-sizing: border-box;
+}
+.mi-listed-title{
+    box-sizing: border-box;
+    padding-left: 4%;
+    color: #fff;
+    margin-bottom: 16px;
+}
+.mi-listed-songs{
+    max-width: 100%;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    margin: auto;
+    box-sizing: border-box;
 
+}
+.mi-listed-songs li{
+    display: inline-block;
+    width: 80%;
+    min-width: 200px;
+    height: 70px;
+    font-size: 18px;
+    color: #fff;
+    background: rgba(0,0,0,.2);
+    transition: .3s;
+    margin: 20px 4.5%;
+    overflow: hidden;
+    padding: 5px 10px;
+    line-height: 30px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.mi-listed-songs li:hover{
+    box-shadow:0 0 10px rgba(255, 255, 255, .7);
+}
+.mi-listed-songs li h4{
+    width: 70%;
+    font-size: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+}
+.mi-listed-songs li p{
+    font-size: 14px;
+}
+.danmaku-box{
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    bottom: 0;
+    display: flex;
+}
+.danmaku-input{
+    width: 80%;
+    height: 38px;
+    border: none;
+    background: none;
+    color: #fff;
+}
+.danmaku-shot{
+    width: 20%;
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+    cursor: pointer;
+    color: #fff;
+    transition: .3s;
+}
+.danmaku-shot:hover{
+    background: rgba(0,0,0,.2);
+    text-shadow: 0 0 10px rgba(255, 255, 255, .2);
+}
 
+.danmaku-input::-webkit-input-placeholder{
+    color: #eee;
+}
+.danmaku-input:-moz-placeholder{
+    color: #eee;
+}
+.danmaku-input::-moz-placeholder{
+    color: #eee;
+}
+.danmaku-input:-ms-input-placeholder{
+    color: #eee;
+}
+.mi-listed-songs-li{
+    position: relative;
+}
+.listed-up,.listed-delete{
+    position: absolute;
+}
+.listed-delete{
+    right: 10px;
+}
+.listed-up{
+    right: 40px;
+}
+.bullet{
+    position: absolute;
+    left: 100vw;
+    color: #fff;
+    font-size: 16px;
+    animation: danmaku 20s linear;
+    height: 22px;
+    overflow: hidden;
+    z-index: 1;
+}
+
+@keyframes danmaku{
+    0%{
+        left: 100vw;
+    }
+    100%{
+        left: -100vw;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    #lcok{
+        display: none;
+    }
+    .mi-ctrl-btns{
+        display: none;
+    }
+    .mi-action{
+        opacity: 1;
+    }
+    .mi-info-box{
+        transform: scale(1);
+        background: rgba(0, 0, 0, 0.2);
+        box-shadow: rgba(255, 255, 255, 0.1) 0 0 3px 3px;
+    }
+    .mi-btns-ctn{
+        transform: scale(1);
+    }
+    #lock{
+        display: none;
+    }
+    #unlock{
+        display: none !important;
+    }
+    .mi-music-info{
+        position: relative;
+        overflow: inherit;
+    }
+    .mi-music-title{
+        position: absolute;
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        top: 60px;
+        left: 0;
+    }
+    .mi-music-singer{
+        position: absolute;
+        top: 120px;
+        left: 0;
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Milody",
+  "version": "0.1.0",
+  "main": "electron.js",
+  "targets": [
+    {
+      "target_name": "electron",
+      "sources": [ "electron.js" ]
+    }
+  ]
+}

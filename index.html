@@ -4,32 +4,26 @@
     <meta charset="UTF-8">
     <title>Milody</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
 </head>
 <body>
-
     <div class="content">
-
         <div class="mi-blur">
-
             <div class="mi-cover"></div>
             <div class="mi-logo"></div>
-
-
-            <div class="mi-bg"></div>
-
+            <div class="mi-bg-2"></div>
+            <div id="bg" class="mi-bg-1"></div>
             <div class="mi-canvas">
                 <canvas id="canvas"></canvas>
                 <canvas id="dotCanvas"></canvas>
             </div>
-
             <div class="mi-action">
-
-
                 <div class="mi-info-box">
                     <div class="mi-music-info">
-                        <h1 class="mi-music-title">孤竹遗梦<small class="mi-music-singer">徐梦圆&双笙</small></h1>
+                        <h1><span class="mi-music-title">未点歌</span><small class="mi-music-singer"></small></h1>
                     </div>
                     <div class="mi-btns-ctn">
+                        <span id="change"><i class="icon-change"></i></span>
                         <span id="lock"><i class="icon-lock"></i></span>
                         <span id="unlock"><i class="icon-unlock"></i></span>
                         <div class="mi-ctrl-btns">
@@ -37,35 +31,67 @@
                             <div id="pause" class="mi-btn"><i class="ctrl-icon icon-pause"></i></div>
                             <div id="start" class="mi-btn"><i class="ctrl-icon icon-start"></i></div>
                             <div id="next" class="mi-btn"><i class="ctrl-icon icon-next"></i></div>
-                            <div id="search" class="mi-btn"><i class="ctrl-icon icon-search"></i></div>
+                            <div id="star" class="mi-btn"><i class="ctrl-icon icon-star"></i></div>
                         </div>
+                        <span class="mi-process-ctn">
+                            <span class="mi-process"></span>
+                        </span>
+                        <!--<div class="danmaku-box">-->
+                            <!--<input class="danmaku-input" type="text" placeholder="装填弹幕" />-->
+                            <!--<span class="danmaku-shot">发射</span>-->
+                        <!--</div>-->
                     </div>
                 </div>
-
             </div>
         </div>
 
 
         <div class="mi-list">
-
             <div id="mi-list-close" class="mi-btn"><i class="ctrl-icon icon-close"></i></div>
-
             <div class="mi-listing">
-                <div class="mi-listing-title">
-                    <h2>音乐列表</h2>
-                    <input type="text" class="mi-listing-search" placeholder="搜索" />
+                <div class="mi-listing-ranking">
+                    <div class="hot">
+                        <div class="mi-listing-title">
+                            <span class="mi-listing-back"></span>
+                            <h2>热度排行</h2>
+                        </div>
+                        <ul class="mi-hot-songs">
+
+                        </ul>
+                    </div>
+                    <div class="recommended">
+                        <div class="mi-listing-title">
+                            <h2>推荐音乐</h2>
+                        </div>
+                        <ul class="mi-recommended-songs">
+
+                        </ul>
+                    </div>
                 </div>
-                <ul class="mi-listing-songs">
-                    <li>
-                        <h4>孤竹遗梦</h4>
-                        <p>徐梦圆&双笙</p>
-                    </li>
+                <div class="mi-listing-options">
+                    <div id="musicList" class="box">音乐列表</div>
+                    <div id="musicHot" class="box">热度排行</div>
+                    <div id="musicRecommended" class="box">推荐音乐</div>
+                </div>
+                <div class="mi-listing-content">
+                    <div class="mi-listing-title">
+                        <span class="mi-listing-back"></span>
+                        <h2>音乐列表</h2>
+                        <input type="text" class="mi-listing-search" placeholder="可按歌名和歌手搜索" />
+                    </div>
+                    <ul class="mi-listing-songs">
+
+                    </ul>
+                </div>
+            </div>
+            <div class="mi-listed">
+                <div class="mi-listed-title">
+                    <h2>已选音乐</h2>
+                </div>
+                <ul class="mi-listed-songs">
+
 
                 </ul>
-            </div>
-
-            <div class="mi-listed">
-
             </div>
 
         </div>

@@ -1,27 +1,42 @@
 var Milody = function () {
 
-    this.file = null;
-    this.fileName = null;
-    this.audioContext = null;
-    this.source = null;
-    this.arrayBuffer = null;
-    this.source = null;
-    this.analyser = null;
-    this.startTime = 0;
-    this.startOffset = 0;
-    this.buffer = null;
-    this.animationState = null;
-    this.ready = 0;
-    this.timeNow = 0;
+    this.audioContext = null; // audio api 的创建对象
+    this.arrayBuffer = null; // 分析器的返回值，用于动画
+    this.source = null; // 用于歌曲操作
+    this.analyser = null; // 频谱分析器
+    this.startTime = 0; // 开始播放的时间（包括上一次暂停）
+    this.startOffset = 0; // 暂停时的歌曲进度
+    this.buffer = null; // 歌曲缓存
+    this.animationState = null; // 标记动画状态
+    this.ready = -1; // 标记歌曲是否正在播放
+    this.timeNow = 0; // 当前进度
+    this.musicList = null; // 歌单
+    this.playList = null;// 播放列表
+    this.i = 0; // 歌曲在文件夹中的位置
+    this.musicName = null; //歌名
+    this.singer = null; // 歌手
+    this.duration = 0; // 长度
+    this.theme = 0;
 
 };
 Milody.prototype = {
-    init : function (u) {
-        this.url = u;
-        this._fixAPI();
-        this._getMusic();
-        this.tryAnimate();
-
+    init : function () {
+        var that = this;
+        var _url = 'assets/js/musicList.json';
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', _url, true);
+        xhr.onload = function () {
+            that.musicList = JSON.parse(xhr.response);
+            that.playList = [];
+            // that.url = that.musicList[0].url;
+            // that.musicName = that.musicList[0].name;
+            // that.singer = that.musicList[0].singer;
+            // that.i = 0;
+            that._fixAPI();
+            // that._getMusic();
+            // that.tryAnimate();
+        };
+        xhr.send();
     },
 
     tryAnimate : function () {
@@ -33,10 +48,52 @@ Milody.prototype = {
         }
     },
 
-    changeMusic : function (u) {
-        this.url = u;
-        this._fixAPI();
-        this._getMusic();
+    addListed : function (i) {
+        this.playList.push(this.musicList[i]);
+    },
+
+    upListed : function (i) {
+        var temp = this.playList.splice(i,1);
+        this.playList.unshift(temp[0]);
+    },
+
+    deleteListed : function (i) {
+        if (i)
+            this.playList.splice(i,1);
+        else
+            this.playList.splice(0,1);
+
+    },
+
+    changeMusic : function (i) {
+        var that = this;
+        if (this.ready == -1){
+            this.ready = 0;
+            this.startTime = 0;
+            this.url = this.musicList[i].url;
+            this.musicName = this.musicList[i].name;
+            this.singer = this.musicList[i].singer;
+            this.i = i;
+            this._fixAPI();
+            this._getMusic();
+            this.tryAnimate();
+        } else if(this.ready == 1){
+            this.startTime = 0;
+            this.source.stop();
+            this.ready = 0;
+            this.url = this.musicList[i].url;
+            this.musicName = this.musicList[i].name;
+            this.singer = this.musicList[i].singer;
+            this.i = i;
+            this._fixAPI();
+            this._getMusic();
+            this.tryAnimate();
+        } else {
+            setTimeout(function () {
+                that.changeMusic(i);
+            }, 1000)
+        }
+
     },
 
     // 消除浏览器差异
@@ -48,6 +105,7 @@ Milody.prototype = {
 
         try {
             this.audioContext = new window.AudioContext();
+            this.audioContext.addEventListener("ended",this._musicEnd);
         } catch (e) {
             console.log("Your browser does not support AudioContext!");
             console.log(e);
@@ -63,11 +121,9 @@ Milody.prototype = {
             _url = this.url;
         }
         var that = this;
-        this.fileName = _url;
         var request = new XMLHttpRequest();
         request.open('GET', _url, true);
         request.responseType = 'arraybuffer';
-
         request.onload = function() {
             that.arrayBuffer = request.response;
             that.audioContext.decodeAudioData(that.arrayBuffer, function(buffer) { //解码成功则调用此函数，参数buffer为解码后得到的结果
@@ -76,156 +132,156 @@ Milody.prototype = {
                 that._start();
 
             }, function(e) {
-                console.log("!哎玛，文件解码失败:(");
+                console.log("文件解码失败\n" + e);
             });
         };
         request.send();
     },
 
     _controlMusic : function (ctrl) {
-        console.log(ctrl == 'pause');
         if (ctrl == 'pause') {
             this.source.stop();
             this.startOffset += this.audioContext.currentTime - this.startTime;
 
         } else if (ctrl == 'resume') {
             this._start();
-
         }
     },
 
-    _start : function () {
+    _start : function () { //播放&恢复播放
 
         this.source = this.audioContext.createBufferSource();
         this.analyser = this.audioContext.createAnalyser();
         this.source.connect(this.analyser);
-
         this.source.connect(this.audioContext.destination);
-
         this.source.buffer = this.buffer;
-        this.source.loop = true;
-
+        this.source.loop = false;
         this.source.start(0, this.startOffset % this.buffer.duration);
+        this._getDuration();
+        this.ready = 1;
         this.startTime = this.startOffset;
-
         this.tryAnimate();
 
     },
 
-     _lineAnimate : function (analyser) {
-            var that = this;
-        // if ( that.ready === 2 ){
+    _getCurrentTime: function () { // 获取歌曲现在的播放进度
+        return this.audioContext.currentTime;
+    },
 
-            var SCREEN_WIDTH = window.innerWidth;
-            var SCREEN_HEIGHT = window.innerHeight;
+    _changeCurrentTime: function (targetTime) { // 更改进度
+        this.source.stop();
+        this.startOffset = targetTime;
+        this.startOffset += this.audioContext.currentTime - this.startTime;
+    },
 
-            var canvas = document.getElementById('canvas');
+    _getDuration: function () { // 获取歌曲长度
+        this.duration = this.buffer.duration;
+    },
 
+    _lineAnimate : function (analyser) { // 线条动画
+        var that = this;
+        var SCREEN_WIDTH = window.innerWidth;
+        var SCREEN_HEIGHT = window.innerHeight;
+
+        var canvas = document.getElementById('canvas');
+
+        canvas.setAttribute("width", SCREEN_WIDTH);
+        canvas.setAttribute("height", SCREEN_HEIGHT);
+
+        var ctx = canvas.getContext("2d");
+        var centerX;
+        var centerY;
+        var POINT_NUM = 120;
+        var DEG = POINT_NUM / 2;
+        var radius;
+        var x,y;
+        var i;
+        var deg = Math.PI;
+        // var analyser = that.analyser;
+        function animate(){
+            SCREEN_WIDTH = window.innerWidth;
+            SCREEN_HEIGHT = window.innerHeight;
             canvas.setAttribute("width", SCREEN_WIDTH);
             canvas.setAttribute("height", SCREEN_HEIGHT);
-
-            var ctx = canvas.getContext("2d");
-            var centerX;
-            var centerY;
-            var POINT_NUM = 120;
-            var DEG = POINT_NUM / 2;
-            var radius;
-            var x,y;
-            var i;
-            var deg = Math.PI;
-            // var analyser = that.analyser;
-
-
-            function animate(){
-                SCREEN_WIDTH = window.innerWidth;
-                SCREEN_HEIGHT = window.innerHeight;
-
-                canvas.setAttribute("width", SCREEN_WIDTH);
-                canvas.setAttribute("height", SCREEN_HEIGHT);
-
-                centerX = SCREEN_WIDTH/2;
-                centerY = SCREEN_HEIGHT/2;
-
-                if (SCREEN_WIDTH > SCREEN_HEIGHT){
-                    radius = SCREEN_HEIGHT/4;
-                } else {
-                    radius = SCREEN_WIDTH/4;
-                }
-
-                var Pa = [],
-                    Pb = [],
-                    temp1 = [],temp2 = [];
-                var array = new Uint8Array(484);
-                // var array = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(array);
-                var step = Math.round(array.length / POINT_NUM); //计算采样步长
-                var value = 0;
-
-                ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-                canvas.width = canvas.width;
-
-                    // ctx.translate(centerX, centerY);
-                    // ctx.rotate(deg);
-                    // ctx.translate(-centerX, -centerY);
-
-                deg += Math.PI / 720 ;
-
-                ctx.restore();
-                for( i = 0; i < POINT_NUM; i++ ){
-                    (function (i) {
-                        // value = array[i * step];
-                        value = array[i * step] * array[i * step] * 0.01;
-                        x = centerX + Math.sin(Math.PI / DEG * i + Math.PI/4) * ( radius + value/4 );
-                        y = centerY - Math.cos(Math.PI / DEG * i + Math.PI/4) * ( radius + value/4 );
-                        temp1 = [x,y];
-                        x = centerX + Math.sin(Math.PI / DEG * i + Math.PI/4) * ( radius );
-                        y = centerY - Math.cos(Math.PI / DEG * i + Math.PI/4) * ( radius );
-                        temp2 = [x,y];
-                        Pa[i] = temp1;
-                        Pb[i] = temp2;
-                    })(i)
-                }
-
-                for( i = 0; i < POINT_NUM; i++ ){
-                    (function (i) {
-                        if ( i == POINT_NUM - 1 ){
-                            drawLine(ctx, Pa[i], Pa[0]);
-                            drawLine(ctx, Pb[i], Pb[0]);
-                        } else {
-                            drawLine(ctx, Pa[i], Pa[i+1]);
-                            drawLine(ctx, Pb[i], Pb[i+1]);
-                        }
-
-                        drawLine(ctx, Pa[i], Pb[i]);
-                    })(i)
-                }
-
-                ctx.strokeStyle = "#ffffff";
-                ctx.stroke();
-                ctx.closePath();
-
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-                that.animationState = requestAnimationFrame(animate);
-
+            centerX = SCREEN_WIDTH/2;
+            centerY = SCREEN_HEIGHT/2;
+            if (SCREEN_WIDTH > SCREEN_HEIGHT){
+                radius = SCREEN_HEIGHT/4;
+            } else {
+                radius = SCREEN_WIDTH/4;
             }
+            var Pa = [],
+                Pb = [],
+                temp1 = [],temp2 = [];
+            var array = new Uint8Array(484);
+            // var array = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(array);
+            var step = Math.round(array.length / POINT_NUM); //计算采样步长
+            var value = 0;
+            ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            canvas.width = canvas.width;
+            // ctx.translate(centerX, centerY);
+            // ctx.rotate(deg);
+            // ctx.translate(-centerX, -centerY);
+            deg += Math.PI / 720 ;
+            ctx.restore();
+            for( i = 0; i < POINT_NUM; i++ ){
+                (function (i) {
+                    // value = array[i * step];
+                    value = array[i * step] * array[i * step] * 0.01;
+                    x = centerX + Math.sin(Math.PI / DEG * i + Math.PI/4) * ( radius + value/4 );
+                    y = centerY - Math.cos(Math.PI / DEG * i + Math.PI/4) * ( radius + value/4 );
+                    temp1 = [x,y];
+                    x = centerX + Math.sin(Math.PI / DEG * i + Math.PI/4) * ( radius );
+                    y = centerY - Math.cos(Math.PI / DEG * i + Math.PI/4) * ( radius );
+                    temp2 = [x,y];
+                    Pa[i] = temp1;
+                    Pb[i] = temp2;
+                })(i)
+            }
+
+            for( i = 0; i < POINT_NUM; i++ ){
+                (function (i) {
+                    if ( i == POINT_NUM - 1 ){
+                        drawLine(ctx, Pa[i], Pa[0]);
+                        drawLine(ctx, Pb[i], Pb[0]);
+                    } else {
+                        drawLine(ctx, Pa[i], Pa[i+1]);
+                        drawLine(ctx, Pb[i], Pb[i+1]);
+                    }
+
+                    drawLine(ctx, Pa[i], Pb[i]);
+                })(i)
+            }
+            var gradient=ctx.createLinearGradient(0,0,canvas.width,canvas.width);
+            if (that.theme == 1){
+                console.log(1)
+                gradient.addColorStop("0.3","#66CCFF");
+                gradient.addColorStop("0.5","#CCFFCC");
+                gradient.addColorStop("0.7","#CC66FF");
+            } else {
+                console.log(2)
+                gradient.addColorStop("1","#fff1f0");
+                ctx.shadowBlur=20;
+                ctx.shadowColor="#cc99ff";
+            }
+            ctx.strokeStyle = gradient;
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
 
             that.animationState = requestAnimationFrame(animate);
 
-        // } else {
-        //     setTimeout(function () {
-        //         that._lineAnimate();
-        //     }, 10)
-        // }
-
-
+        }
+        that.animationState = requestAnimationFrame(animate);
         function drawLine(ctx, Pa, Pb) {
             ctx.moveTo(Pa[0], Pa[1]);
             ctx.lineTo(Pb[0], Pb[1]);
         }
     },
 
-    _dotAnimate : function (analyser) {
+    _dotAnimate : function (analyser) { // 点动画
         var that = this;
 
         // if ( that.ready == 2 ) {
@@ -237,7 +293,7 @@ Milody.prototype = {
         var SCREEN_WIDTH = window.innerWidth;
         var SCREEN_HEIGHT = window.innerHeight;
 
-        console.log(that.analyser);
+        // console.log(that.analyser);
 
         var random = function(m, n) {
             return Math.round(Math.random() * (n - m) + m);
@@ -291,6 +347,9 @@ Milody.prototype = {
                 x: x,
                 y: y,
                 dy: Math.random() + 0.1,　　　//保证dy>0.1
+                r : random(150,255),
+                g : random(150,255),
+                b : random(150,255),
                 color: color,
                 radius: 30
             });
@@ -316,7 +375,8 @@ Milody.prototype = {
                 var s = visualizer[n];
                 s.radius = Math.round(array[n] / 256 * (cwidth > cheight ? cwidth / 48 : cheight / 36));
                 var gradient = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius);
-                gradient.addColorStop(0, "rgba(255,255,255,1)");
+
+                gradient.addColorStop(0, "rgba("+s.r+","+s.g+","+s.b+","+0.7+")");
                 gradient.addColorStop(1, "rgba(255,255,255,0)");
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
@@ -349,12 +409,10 @@ Milody.prototype = {
         // }
     },
 
-    _musicEnd : function () {
-
-    },
-
-    prepare : function () {
-
+    _musicEnd : function () { // 音乐结束，下一曲
+        var i = this.i;
+        var new_i = this.musicList[++i].i;
+        this.changeMusic(new_i);
     }
 
 };
